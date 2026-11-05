@@ -542,6 +542,7 @@ def main() -> None:
                     type="password",
                     placeholder="6 to 18 digits",
                     help="The full account number is never displayed or stored in run history.",
+                    autocomplete="off",
                 )
                 ifsc = st.text_input(
                     "IFSC *",
