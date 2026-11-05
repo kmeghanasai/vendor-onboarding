@@ -2,6 +2,10 @@
 
 A Streamlit workflow that accepts Indian vendor details and text-based evidence PDFs, extracts supported fields with Gemini, and produces an auditable `Approved`, `Pending`, or policy-based `Rejected` decision.
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app/)
+
+**Live demo:** [vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app](https://vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app/)
+
 ## Decision rules
 
 - `Approved` only when all required fields are valid, GSTIN checksum validation passes, both documents are readable, every extracted value has an exact source excerpt, all comparisons match, no history risk is detected, and no blocking policy applies.
@@ -91,4 +95,4 @@ Regenerate the PDFs with:
 python scripts/generate_demo_pdfs.py
 ```
 
-This milestone intentionally has no persistent database, email sending, OCR, government lookup, bank verification, or deployment configuration.
+This milestone intentionally has no persistent database, email sending, OCR, government lookup, or bank verification.
