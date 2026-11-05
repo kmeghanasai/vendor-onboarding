@@ -510,20 +510,24 @@ def main() -> None:
                 legal_name = st.text_input(
                     "Legal company name *",
                     placeholder="Name shown on the GST registration",
+                    autocomplete="off",
                 )
                 contact_name = st.text_input(
                     "Contact name *",
                     placeholder="Primary vendor contact",
+                    autocomplete="off",
                 )
                 contact_email = st.text_input(
                     "Contact email *",
                     placeholder="name@company.com",
+                    autocomplete="off",
                 )
                 country = st.selectbox("Country *", ["India"], disabled=True)
                 gstin = st.text_input(
                     "GSTIN *",
                     placeholder="15-character GST identification number",
                     help="The format and base-36 checksum are validated.",
+                    autocomplete="off",
                 )
 
             with bank_column:
@@ -531,6 +535,7 @@ def main() -> None:
                 beneficiary_name = st.text_input(
                     "Bank beneficiary name *",
                     placeholder="Name shown on the bank proof",
+                    autocomplete="off",
                 )
                 account_number = st.text_input(
                     "Bank account number *",
@@ -541,6 +546,7 @@ def main() -> None:
                 ifsc = st.text_input(
                     "IFSC *",
                     placeholder="Example: HDFC0001234",
+                    autocomplete="off",
                 )
                 st.info(
                     "A verified bank change after approval, or a bank account previously approved "
