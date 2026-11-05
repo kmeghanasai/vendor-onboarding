@@ -1,0 +1,8 @@
+{
+  "blocked_vendors": [
+    {
+      "gstin": "29AAPFU0939F1ZR",
+      "reason": "Synthetic internal policy: onboarding prohibited after a prior compliance termination."
+    }
+  ]
+}
