@@ -44,11 +44,7 @@ def make_run_record(
             "Source": row.document,
             "Extracted value": _display_value(row.field, row.extracted_value),
             "Evidence check": row.result,
-            "Supporting excerpt": (
-                mask_account_text(row.excerpt)
-                if row.field == "Bank account number"
-                else row.excerpt or "Not available"
-            ),
+            "Supporting excerpt": mask_account_text(row.excerpt),
         }
         for row in result.evidence
     ]

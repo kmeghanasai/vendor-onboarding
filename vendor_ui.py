@@ -115,11 +115,7 @@ def _evidence_rows(result: ValidationResult) -> list[dict[str, str]]:
             "Source": row.document,
             "Extracted value": _display_value(row.field, row.extracted_value),
             "Evidence check": row.result,
-            "Supporting excerpt": (
-                mask_account_text(row.excerpt)
-                if row.field == "Bank account number"
-                else row.excerpt or "Not available"
-            ),
+            "Supporting excerpt": mask_account_text(row.excerpt),
         }
         for row in result.evidence
     ]
@@ -168,6 +164,7 @@ def render_result(result: ValidationResult, run_number: int) -> None:
     with action_column:
         st.markdown("#### Recommended action")
         st.info(result.follow_up)
+        st.caption("Generated for review and follow-up; this application does not send email.")
         st.caption(
             "Approval confirms internal consistency only. It is not government registration "
             "or bank-account verification."
@@ -361,6 +358,7 @@ def render_dashboard() -> None:
                 [finding["Finding"] for finding in findings],
             )
             st.info(record["follow_up"])
+            st.caption("Generated for review and follow-up; this application does not send email.")
 
 
 def render_decision_guide() -> None:
@@ -541,7 +539,10 @@ def main() -> None:
                     "Bank account number *",
                     type="password",
                     placeholder="6 to 18 digits",
-                    help="The full account number is never displayed or stored in run history.",
+                    help=(
+                        "Account numbers are masked in comparison and audit views and are "
+                        "not stored raw in run history."
+                    ),
                     autocomplete="off",
                 )
                 ifsc = st.text_input(

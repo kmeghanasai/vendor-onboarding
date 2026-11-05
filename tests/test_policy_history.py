@@ -175,3 +175,34 @@ def test_history_masks_account_and_rehydrates_only_approved_records():
     approvals = prior_approvals([record])
     assert len(approvals) == 1
     assert approvals[0].account_fingerprint == account_fingerprint("001234567890")
+
+
+def test_history_masks_account_number_embedded_in_any_evidence_excerpt():
+    case = complete_case()
+    submission, gst_doc, _, gst, _ = case
+    bank_text = (
+        "Beneficiary: Acme Demo Technologies Private Limited, Account: 001234567890\n"
+        "Account: 001234567890\nIFSC: HDFC0001234"
+    )
+    bank_doc = DocumentExtraction("bank.pdf", bank_text, 1)
+    bank = ExtractionOutcome(data=BankDocumentFields(
+        beneficiary_name=evidence(
+            "Acme Demo Technologies Private Limited", bank_text.splitlines()[0]
+        ),
+        account_number=evidence("001234567890", bank_text.splitlines()[1]),
+        ifsc=evidence("HDFC0001234", bank_text.splitlines()[2]),
+    ))
+    result = validate_submission(submission, gst_doc, bank_doc, gst, bank)
+    record = make_run_record(
+        submission, result, 1, datetime(2026, 11, 4, 10, 0, tzinfo=timezone.utc)
+    )
+
+    beneficiary_evidence = next(
+        row for row in record["evidence"] if row["Field"] == "Bank beneficiary name"
+    )
+    assert "001234567890" not in beneficiary_evidence["Supporting excerpt"]
+    assert "********7890" in beneficiary_evidence["Supporting excerpt"]
+    ifsc_evidence = next(
+        row for row in record["evidence"] if row["Field"] == "IFSC"
+    )
+    assert ifsc_evidence["Supporting excerpt"] == "IFSC: HDFC0001234"

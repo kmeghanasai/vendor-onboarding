@@ -21,7 +21,9 @@ GSTIN_PATTERN = re.compile(r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$")
 IFSC_PATTERN = re.compile(r"^[A-Z]{4}0[A-Z0-9]{6}$")
 EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 ACCOUNT_PATTERN = re.compile(r"^[0-9]{6,18}$")
-ACCOUNT_IN_TEXT_PATTERN = re.compile(r"(?<!\d)(?:\d[\s-]?){5,17}\d(?!\d)")
+ACCOUNT_IN_TEXT_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])(?:\d[\s-]?){5,17}\d(?![A-Za-z0-9])"
+)
 BASE36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
@@ -411,6 +413,23 @@ def validate_submission(
                 f"{label} does not match the uploaded document.",
                 f"Correct the submitted {label.lower()} or provide a matching document.",
             )
+
+    verified_names_differ = (
+        gst_data is not None
+        and bank_data is not None
+        and _comparison_result(comparisons, "Legal company name") == "Match"
+        and _comparison_result(comparisons, "Bank beneficiary name") == "Match"
+        and normalize_name(gst_data.legal_company_name.value or "")
+        != normalize_name(bank_data.beneficiary_name.value or "")
+    )
+    if verified_names_differ:
+        add_finding(
+            "NAME_REVIEW_REQUIRED",
+            "The verified GST legal company name and bank beneficiary name differ after "
+            "case, punctuation, and whitespace normalization.",
+            "Ask a reviewer to confirm a legitimate proprietor, trading-name, or other "
+            "documented relationship between the GST and bank identities.",
+        )
 
     verified_gstin = (
         _comparison_result(comparisons, "GSTIN") == "Match"

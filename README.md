@@ -8,8 +8,8 @@ A Streamlit workflow that accepts Indian vendor details and text-based evidence 
 
 ## Decision rules
 
-- `Approved` only when all required fields are valid, GSTIN checksum validation passes, both documents are readable, every extracted value has an exact source excerpt, all comparisons match, no history risk is detected, and no blocking policy applies.
-- `Pending` for incomplete or invalid input, unreadable evidence, extraction failures, unsupported fields, document discrepancies, name-review cases, changed bank details for a previously Approved GSTIN, or a verified account previously Approved for another GSTIN.
+- `Approved` only when all required fields are valid, GSTIN checksum validation passes, both documents are readable, every extracted value has an exact source excerpt, all comparisons match, the verified GST and bank identities are consistent, no history risk is detected, and no blocking policy applies.
+- `Pending` for incomplete or invalid input, unreadable evidence, extraction failures, unsupported fields, document discrepancies, cross-document identity review, changed bank details for a previously Approved GSTIN, or a verified account previously Approved for another GSTIN.
 - `Rejected` only when the submitted GSTIN is checksum-valid, matches the GST document, and exactly matches the explicit synthetic policy in `data/blocked_vendors.json`.
 - Company names are normalized for case, punctuation, and whitespace only. Fuzzy matching never auto-approves.
 - Approval means internal consistency checks passed. It is not government registration or bank-account verification.
@@ -20,11 +20,11 @@ The extraction prompt receives PDF text but never submitted form values. PDF tex
 
 The application has three views:
 
-- **Submit vendor** - a two-column form, live seven-stage processing view, decision summary, field comparison, and evidence provenance.
+- **Submit vendor** - a two-column form, live seven-stage processing view, decision summary, field comparison, evidence provenance, and a generated follow-up action.
 - **Audit dashboard** - status metrics, filters, search, concise primary reasons, masked accounts, and a selected-run review panel.
 - **Decision guide** - a plain-language explanation of the workflow, statuses, and current OCR limitation.
 
-History is intentionally session-only for this take-home milestone. Raw account numbers are not stored in history. A one-way fingerprint is retained only to detect changed details or an account already Approved for another GSTIN. Supporting account excerpts are masked before display or audit storage.
+History is intentionally session-only for this take-home milestone. Raw account numbers are not stored in history. A one-way fingerprint is retained only to detect changed details or an account already Approved for another GSTIN. Account-like numeric sequences are masked across all evidence excerpts before display or audit storage. Follow-up text is generated for review; the application does not send email.
 
 ## Windows setup
 

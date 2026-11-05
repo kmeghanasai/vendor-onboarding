@@ -84,6 +84,32 @@ def test_name_and_identifier_mismatches_are_pending():
     assert checks["GSTIN"] == "Mismatch"
 
 
+def test_different_verified_gst_and_bank_identities_require_human_review():
+    bank_text = (
+        "Beneficiary Name: Meghana Sai\n"
+        "Account Number: 001234567890\nIFSC: HDFC0001234"
+    )
+    bank = BankDocumentFields(
+        beneficiary_name=field("Meghana Sai", bank_text.splitlines()[0]),
+        account_number=field("001234567890", bank_text.splitlines()[1]),
+        ifsc=field("HDFC0001234", bank_text.splitlines()[2]),
+    )
+    result = validate(
+        outcomes()[0],
+        ExtractionOutcome(data=bank),
+        form=submission(beneficiary_name="Meghana Sai"),
+        bank_text=bank_text,
+    )
+
+    assert result.status == "Pending"
+    assert all(row.result == "Match" for row in result.comparisons)
+    assert "NAME_REVIEW_REQUIRED" in result.reason_codes
+    assert any(
+        "GST legal company name and bank beneficiary name differ" in reason
+        for reason in result.reasons
+    )
+
+
 def test_null_extracted_field_is_pending():
     gst, bank = outcomes()
     bank_data = bank.data.model_copy(
