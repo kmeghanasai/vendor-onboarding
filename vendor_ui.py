@@ -41,8 +41,6 @@ from validation import (
 )
 
 
-st.set_page_config(page_title="Vendor onboarding", page_icon="V", layout="wide")
-
 st.markdown(
     """
     <style>
