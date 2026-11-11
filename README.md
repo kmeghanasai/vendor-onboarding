@@ -1,10 +1,54 @@
-# Vendor onboarding - PS2 case study
+# AI-assisted vendor onboarding
 
-A Streamlit workflow that accepts Indian vendor details and text-based evidence PDFs, extracts supported fields with Gemini, and produces an auditable `Approved`, `Pending`, or policy-based `Rejected` decision.
+A Streamlit case-study application that turns Indian vendor details and supporting PDFs into an explainable onboarding decision. Gemini extracts evidence independently; deterministic Python rules validate, compare, and decide whether the case is `Approved`, `Pending`, or explicitly policy-based `Rejected`.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app/)
 
 **Live demo:** [vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app](https://vendor-app-4fdve22vgswexxnsqmknxf.streamlit.app/)
+
+**Demo data:** [fictional PDFs and form-value guide](output/pdf/demo_documents/FORM_VALUES_GUIDE.md)
+
+## What this project demonstrates
+
+- Evidence-grounded extraction from real PDF text using PyMuPDF and the official Google Gen AI SDK.
+- Structured Gemini responses validated with Pydantic and independently checked against exact source excerpts.
+- Conservative, deterministic approval rules with no fuzzy matching or LLM-generated final decisions.
+- Persistent, privacy-aware audit history, human review, correction requests, and linked resubmissions using Supabase.
+- Operational edge cases including changed bank details, shared accounts across GSTINs, mixed identities, unsupported evidence, and an explicit synthetic blocklist.
+
+## Workflow
+
+```mermaid
+flowchart LR
+    A[Vendor form + PDFs] --> B[PyMuPDF text extraction]
+    B --> C[Gemini structured extraction]
+    C --> D[Schema + excerpt verification]
+    D --> E[Deterministic comparisons]
+    E --> F{Decision}
+    F -->|Consistent| G[Approved]
+    F -->|Review or correction needed| H[Pending]
+    F -->|Explicit policy rule| I[Rejected]
+    H --> J[Human review]
+    J --> K[Correction request]
+    K --> L[Linked revision]
+    G --> M[Privacy-safe audit history]
+    H --> M
+    I --> M
+    L --> M
+```
+
+The LLM never receives the submitted form values and never makes the final decision. Document text is treated as untrusted input. Python verifies that every claimed excerpt exists in the source text before applying validation, history, and policy rules.
+
+## Technology
+
+| Area | Tools |
+| --- | --- |
+| Application UI | Python, Streamlit |
+| PDF processing | PyMuPDF |
+| Structured extraction | Google Gen AI SDK (`google-genai`), Gemini, Pydantic |
+| Decision engine | Deterministic Python validation and policy rules |
+| Persistent workflow | Supabase/PostgreSQL with Row Level Security and SQL migrations |
+| Demo assets and testing | ReportLab, pytest, mocked Gemini responses |
 
 ## Decision rules
 
@@ -95,6 +139,23 @@ python -m streamlit run app.py
 
 Streamlit normally opens `http://localhost:8501`.
 
+## Repository structure
+
+```text
+app.py                    Streamlit entry point
+vendor_ui.py              Submission, tracking, review, and dashboard views
+document_extraction.py    PyMuPDF document text extraction
+gemini_extraction.py      Structured Gemini extraction and evidence schema
+validation.py             Deterministic validation and cross-checking
+audit_store.py            Session and Supabase audit adapters
+case_tracking.py          Private case references and linked revisions
+reviewer_access.py        Protected human-review workflow
+policy.py                 Explicit synthetic rejection policy
+database/migrations/      Supabase schema, review, and case-tracking migrations
+output/pdf/demo_documents Fictional PDFs and form-value guide
+tests/                    Unit and mocked end-to-end pipeline tests
+```
+
 ## Tests
 
 ```powershell
@@ -102,6 +163,10 @@ python -m pytest -q
 ```
 
 Tests mock Gemini responses and do not require an API key or network access.
+
+## Deployment
+
+The application is deployed from `main` on Streamlit Community Cloud. Configure the same values shown in `.streamlit/secrets.toml.example` through the app's **Settings → Secrets** panel; never upload the real local secrets file. After deployment, enable public access and verify the live URL in a signed-out or incognito browser.
 
 ## Synthetic demos
 
@@ -120,4 +185,6 @@ Regenerate the PDFs with:
 python scripts/generate_demo_pdfs.py
 ```
 
-The application supports optional persistent audit history. It still intentionally has no email sending, OCR, government lookup, or bank-account verification.
+## Current scope
+
+This is a working case-study workflow rather than an external verification service. It intentionally does not send email, OCR image-only scans, query government registries, or verify ownership with a bank. Those cases are disclosed clearly and routed to `Pending` rather than being presented as verified or approved.
