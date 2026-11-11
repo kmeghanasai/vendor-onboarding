@@ -79,6 +79,36 @@ class ValidationResult:
         return self.reason_codes[0] if self.reason_codes else "UNCLASSIFIED"
 
 
+def with_operational_pending(
+    result: ValidationResult,
+    code: str,
+    reason: str,
+    action: str,
+) -> ValidationResult:
+    """Prevent approval when a required operational control could not complete."""
+    if code in result.reason_codes:
+        return result
+    if result.status == "Rejected":
+        return result
+    if result.status == "Approved":
+        reasons = (reason,)
+        reason_codes = (code,)
+        follow_up = f"Next steps: {action}"
+    else:
+        reasons = (*result.reasons, reason)
+        reason_codes = (*result.reason_codes, code)
+        separator = " " if result.follow_up.endswith((".", ":")) else ". "
+        follow_up = f"{result.follow_up}{separator}{action}"
+    return ValidationResult(
+        "Pending",
+        reasons,
+        follow_up,
+        result.comparisons,
+        reason_codes,
+        result.evidence,
+    )
+
+
 def normalize_name(value: str) -> str:
     """Normalize case, punctuation, and whitespace only; never fuzzy-match."""
     casefolded = value.casefold()
